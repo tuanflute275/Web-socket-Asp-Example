@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Chat Application</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <style>
+        #messages {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .message {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">Chat Application</h1>
+
+    <!-- Dropdown chọn hình nền -->
+    <button id="changeColorBtn" class="btn btn-primary">Change Background Color</button>
+
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type a message..." />
+    <button id="sendButton">Send</button>
+
+    <script>
+        const socket = new WebSocket('wss://localhost:7295/api/chat');
+
+        socket.onopen = function(event) {
+            console.log("WebSocket is open now.");
+        };
+
+        socket.onmessage = function(event) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.innerText = event.data;
+            document.getElementById('messages').appendChild(messageDiv);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+
+            // Nếu tin nhắn là mã màu, thay đổi màu nền
+            if (/^#[0-9A-F]{6}$/i.test(event.data)) {
+                document.body.style.backgroundColor = event.data;
+            }
+        };
+
+        socket.onclose = function(event) {
+            console.log("WebSocket is closed now.");
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket error:", error);
+        };
+
+        document.getElementById('sendButton').onclick = function() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            socket.send(message);
+            messageInput.value = '';
+        };
+
+        // Thay đổi hình nền
+        document.getElementById('changeColorBtn').addEventListener('click', () => {
+            const color = '#' + Math.floor(Math.random() * 16777215).toString(16); // tạo màu ngẫu nhiên
+            socket.send(color); // gửi mã màu đến server qua WebSocket
+        });
+    </script>
+</body>
+</html>

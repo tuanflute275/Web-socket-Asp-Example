@@ -21,5 +21,9 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
+var webSocketOptions = new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(2),
+};
+app.UseWebSockets(webSocketOptions);
 app.Run();

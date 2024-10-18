@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Collaborative Drawing App</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <style>
+      canvas {
+        border: 1px solid black;
+        cursor: crosshair;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="text-center">Collaborative Drawing App</h1>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const socket = new WebSocket("wss://localhost:7295/api/drawing");
+
+      let drawing = false;
+      let lastX = 0;
+      let lastY = 0;
+
+      // Bắt đầu vẽ
+      canvas.addEventListener("mousedown", (e) => {
+        drawing = true;
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+      });
+
+      // Dừng vẽ
+      canvas.addEventListener("mouseup", () => {
+        drawing = false;
+      });
+
+      // Vẽ
+      canvas.addEventListener("mousemove", (e) => {
+        if (!drawing) return;
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+
+        // Gửi thông tin vẽ đến server
+        const message = JSON.stringify({
+          action: "draw",
+          x1: lastX,
+          y1: lastY,
+          x2: e.offsetX,
+          y2: e.offsetY,
+        });
+        socket.send(message);
+      });
+
+      // Nhận thông điệp từ server
+      socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        if (data.action === "draw") {
+          ctx.beginPath();
+          ctx.moveTo(data.x1, data.y1);
+          ctx.lineTo(data.x2, data.y2);
+          ctx.stroke();
+        }
+      };
+    </script>
+  </body>
+</html>
