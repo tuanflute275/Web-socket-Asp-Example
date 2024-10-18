@@ -158,3 +158,172 @@ create table etf_quete
 	time_stamp datetime not null, --Thời điểm cập nhật giá của quỹ đầu tư chứng khoán (ETF)
 );
 go
+
+/*
+	"ETF holding" (cổ phiếu nắm giữ của quỹ ETF) đề cập đến các tài sản mà một quỹ hoán đổi danh mục (ETF - Exchange-Traded Fund) 
+	đang nắm giữ. ETF là một loại quỹ đầu tư chứa nhiều tài sản khác nhau, như cổ phiếu, trái phiếu, hoặc hàng hóa, và cho phép 
+	nhà đầu tư mua bán trên sàn chứng khoán giống như cổ phiếu thông thường.
+*/
+create table etf_holdings
+(
+	--Id của quỹ đầu tư chứng khoán(ETF) liên quan đến mã cổ phiếu được giữ (tham chiếu đến bảng etfs)
+	etf_id int foreign key references etfs(etf_id),
+	--Id của quỹ đầu tư chứng khoán(ETF) đang giữ (tham chiếu đến bảng stocks)
+	stock_id int foreign key references stocks(stock_id),
+	shares_held decimal(18, 4),
+	--Số lượng cổ phiếu của mã cổ phiếu đó mà quỹ đầu tư chứng khoán đang nắm giữ
+	weight decimal(18,4),
+	--Trọng số của cổ phiếu đó trong tổng danh mục đầu tư của quỹ đầu tư chứng khoán (ETF) 
+	--, thể hiện tỷ lệ phần trăm của cổ phiếu đó so với giá trị danh mục
+);
+go
+
+-- watchlists bảng danh sách theo dõi mã cổ phiếu
+-- N user theo dõi N stocks (nhiều user có thể theo dõi nhiều stock)
+CREATE TABLE watchlists (
+	user_id INT FOREIGN KEY REFERENCES users (user_id), -- ID người dùng 
+	stock_id INT FOREIGN KEY REFERENCES stocks (stock_id) -- ID cổ phiếu
+);
+go
+
+
+-- Orders table (Bảng đơn hàng /đặt lệnh)
+/*
+Market order: Lệnh mua/bán thực hiện ngay lập tức với giá thị trường hiện tại.
+Trong trường hợp không có sẵn đủ số lượng cổ phiếu mà bạn yêu cầu,
+thì lệnh sẽ được thực hiện với số lượng tối đa có thể đáp ứng được trên thị trường.
+
+Limit order: Lệnh mua/bán với giá giới hạn. Bạn chỉ muốn mua/bán chứng khoán với giá mà bạn muốn, 
+thay vì giá thị trường hiện tại. Lệnh mua sẽ được thực hiện với giá thấp hơn hoặc bằng giá giới hạn, 
+còn lệnh bán sẽ được thực hiện với giá cao hơn hoặc bằng giá giới hạn.
+
+Stop order: Lệnh mua/bán chỉ được thực hiện khi giá chứng khoán đạt đến mức giá xác định trước đó. 
+Lệnh mua sẽ được thực hiện khi giá chứng khoán vượt qua giá stop,
+còn lệnh bán sẽ được thực hiện khi giá chứng khoán giảm dưới mức giá stop. 
+Lệnh stop order thường được sử dụng để giảm thiểu rủi ro khi giao dịch, 
+đặc biệt là trong các thị trường dao động mạnh.
+*/
+CREATE TABLE orders (
+	order_id INT PRIMARY KEY IDENTITY(1,1), -- ID đơn hàng / lệnh
+	user_id INT FOREIGN KEY REFERENCES users (user_id), -- ID người dùng 
+	stock_id INT FOREIGN KEY REFERENCES stocks (stock_id), --ID cổ phiếu 
+	order_type NVARCHAR(20), -- Loại đơn hàng (ví dụ: market, limit, stop) 
+	direction NVARCHAR(20), --Hướng (ví dụ: buy (mua), sell (bán))
+	quantity INT, -- Số lượng
+	price DECIMAL(18, 4), -- Giá 
+	status NVARCHAR(20),--Trạng thái (ví dụ: pending, executed, canceled) Ngày đặt hàng
+	order_date DATETIME -- ngày đặt mua/ đặt lệnh
+);
+go
+
+-- Portfolios table (Bảng danh mục đầu tư)
+CREATE TABLE portfolios (
+	user_id INT FOREIGN KEY REFERENCES users (user_id), -- ID người dùng 
+	stock_id INT FOREIGN KEY REFERENCES stocks (stock_id), -- ID cổ phiếu
+	quantity INT, -- Số lượng
+	purchase_price DECIMAL(18, 4), -- Giá mua
+	purchase_date DATETIME --Ngày mua
+);
+go
+
+/*
+Thông báo:
+order_executed: Thông báo khi một đơn hàng mua hoặc bán chứng khoán đã được thực hiện thành công hoặc thất bại. 
+
+price_alert: Thông báo khi giá của một cổ phiếu đạt đến một ngưỡng giá mà người dùng đã thiết lập trước đó. 
+
+news_event: Thông báo về các sự kiện, tin tức mới liên quan đến các cổ phiếu trong danh mục đầu tư của người dùng.
+*/
+CREATE TABLE notifications (
+	notification_id INT PRIMARY KEY IDENTITY(1,1), --ID thông báo
+	user_id INT FOREIGN KEY REFERENCES users (user_id),--ID người dùng
+	notification_type NVARCHAR(50), -- Loại thông báo (ví dụ: order_executed, price_alert, news_event) 
+	content TEXT NOT NULL,--Nội dung thông báo
+	is_read BIT DEFAULT 8, -- Đánh dấu đã đọc hay chưa đọc (1: đã đọc, 0: chưa đọc)
+	created_at DATETIME--Thời điểm tạo thông báo
+);
+go
+
+-- bảng tài liệu 
+--Bảng này dùng để quản lý các tài liệu giáo dục trong nhiều lĩnh vực khác nhau như đầu tư, quản lý rủi ro, và chiến lược giao dịch.
+CREATE TABLE educational_resources (
+	resource_id INT PRIMARY KEY IDENTITY(1,1), -- ID tài liệu
+	title NVARCHAR(255) NOT NULL, -- Tiêu đề
+	content TEXT NOT NULL, -- Nội dung
+	category NVARCHAR(100), -- Danh mục (ví dụ: đầu tư, chiến lược giao dịch, quản lý rủi ro) 
+	date_published DATETIME -- Ngày xuất bản
+);
+go
+
+-- Linked bank accounts table (Bảng tài khoản ngân hàng tiên kết)
+/*
+Routing number (mã số định tuyến) Là một mã số được sử dụng để xác định một ngân hàng tại Hoa Kỳ.
+Mã số này gồm 9 chữ số và thường được sử dụng để thực hiện các giao dịch tiên ngân hàng,
+chẳng hạn như chuyển khoản ngân hàng hoặc thanh toán bằng séc. Mỗi ngân hàng sẽ có một mã số định tuyến riêng,
+giúp cho việc xác định và phân toại các giao dịch được thực hiện giữa các ngân hàng trở nên dễ dàng hơn.
+*/
+CREATE TABLE linked_bank_accounts (
+	account_id INT PRIMARY KEY IDENTITY(1,1), -- ID tài khoản
+	user_id INT FOREIGN KEY REFERENCES users(user_id), -- ID người dùng
+	bank_name NVARCHAR(255) NOT NULL,-- Tên ngân hàng
+	account_number NVARCHAR(50) NOT NULL, -- Số tài khoản
+	routing_humber NVARCHAR(50), -- Số định tuyến
+	account_type NVARCHAR(50) -- Loặi tài khoản (ví dụ: checking, savings)
+);
+go
+/*
+Khi một order được tạo ra, các bảng sau sẽ bị thay đổi:
+
+Bảng orders: Sẽ thêm một bản ghi mới đại diện cho đơn hàng mới được tạo ra.
+
+Bảng portfoLios: Nếu đơn hàng là loại mua (buy), số lượng cổ phiếu tương ứng sẽ được thêm vào
+danh mục đầu tư của người dùng;
+
+nếu đơn hàng là loại bán (sell), số lượng cổ phiếu tương ứng sẽ bị trừ đi từ danh mục đầu tư của người dùng.
+
+Bảng notifications: Một thông báo mới có thể được tạo ra để thông báo cho người dùng về việc
+đơn hàng đã được thực hiện thành công hoặc thất bại.
+
+Bảng transactions: Nếu đơn hàng Là Loại mua (buy),
+một giao dịch mới sẽ được thêm vào bảng này để đại diện cho số tiền
+được rút ra từ tài khoản ngân hàng của người dùng và chuyển đến sàn giao dịch;
+nếu đơn hàng tà Loại bán (sell),
+một giao dịch mới sẽ được thêm vào bảng này để đại diện cho số tiền được
+chuyển từ sàn giao dịch đến tài khoản ngân hàng của người dùng.
+
+*/
+
+CREATE TABLE transactions (
+	transaction_id INT PRIMARY KEY IDENTITY(1,1), -- ID giao dịch
+	user_id INT FOREIGN KEY REFERENCES users(user_id), -- ID người dùng
+	linked_account_id INT FOREIGN KEY REFERENCES linked_bank_accounts(account_id), -- ID tài khoản Liên kết
+	transaction_type NVARCHAR(50), -- Loại giao dịch (ví dụ: deposit, withdrawal)
+	amount DECIMAL(18, 2), -- Số tiền
+	transaction_date DATETIME-- Ngày giao dịch
+);
+go
+
+INSERT INTO users (username, password, email, phone, full_name, birthday, country)
+VALUES 
+('john_doe', 'password123', 'john.doe@example.com', '1234567890', 'John Doe', '1990-05-15', 'USA'),
+('jane_smith', 'password456', 'jane.smith@example.com', '0987654321', 'Jane Smith', '1985-07-22', 'UK'),
+('peter_parker', 'spiderweb789', 'peter.parker@example.com', '1122334455', 'Peter Parker', '1995-12-10', 'USA'),
+('bruce_wayne', 'darkknight123', 'bruce.wayne@example.com', '2233445566', 'Bruce Wayne', '1980-02-19', 'USA'),
+('clark_kent', 'superman987', 'clark.kent@example.com', '3344556677', 'Clark Kent', '1988-11-05', 'Canada');
+
+go
+
+INSERT INTO user_devices (user_id, device_id)
+VALUES 
+(1, 'device-uuid-1234'),  -- John Doe's device
+(1, 'device-imei-5678'),  -- Another device for John Doe
+(2, 'device-uuid-9876'),  -- Jane Smith's device
+(3, 'device-imei-5432'),  -- Peter Parker's device
+(4, 'device-uuid-1122'),  -- Bruce Wayne's device
+(4, 'device-imei-3344'),  -- Another device for Bruce Wayne
+(5, 'device-uuid-9988');  -- Clark Kent's device
+go
+
+
+select * from users;
+
