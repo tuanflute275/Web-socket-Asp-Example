@@ -303,6 +303,10 @@ CREATE TABLE transactions (
 );
 go
 
+/*
+	INSERT DATA FAKE
+*/
+
 INSERT INTO users (username, password, email, phone, full_name, birthday, country)
 VALUES 
 ('john_doe', 'password123', 'john.doe@example.com', '1234567890', 'John Doe', '1990-05-15', 'USA'),
@@ -324,6 +328,231 @@ VALUES
 (5, 'device-uuid-9988');  -- Clark Kent's device
 go
 
+INSERT INTO stocks (symbol, company_name, market_cap, sector, industry, sector_en, industry_en, stock_type, rank, rank_source, reason)
+VALUES 
+('AAPL', 'Apple Inc.', 2500000000000, 'Công nghệ', 'Phần cứng máy tính', 'Technology', 'Computer Hardware', 'Common stock', 1, 'Forbes', 'Hiệu suất cao liên tục trong lĩnh vực công nghệ'),
+('FB', 'Meta Platforms Inc.', 900000000000, 'Công nghệ', 'Mạng xã hội', 'Technology', 'Social Media', 'Common stock', 2, 'Bloomberg', 'Thành công trong quảng cáo trực tuyến và mở rộng metaverse'),
+('VNM', 'Vinamilk', 100000000000, 'Hàng tiêu dùng', 'Sản xuất thực phẩm', 'Consumer Goods', 'Food Production', 'Common stock', 5, 'VnEconomy', 'Doanh số bán hàng cao trong thị trường quốc tế'),
+('FPT', 'FPT Corporation', 300000000000, 'Công nghệ', 'Dịch vụ phần mềm', 'Technology', 'Software Services', 'Common stock', 3, 'Vietstock', 'Tăng trưởng doanh thu dịch vụ công nghệ thông tin'),
+('VIC', 'Vingroup', 500000000000, 'Bất động sản', 'Phát triển dự án', 'Real Estate', 'Project Development', 'Common stock', 4, 'VietnamFinance', 'Phát triển mạnh trong lĩnh vực bất động sản và xe điện');
+GO
 
-select * from users;
+INSERT INTO quotes (stock_id, price, change, percent_change, volume, time_stamp)
+VALUES 
+(1, 150.25, -1.75, -1.15, 35000000, '2024-10-17 09:30:00'),
+(2, 325.50, 3.25, 1.01, 12000000, '2024-10-17 09:30:00'),
+(3, 92.10, 0.50, 0.55, 5000000, '2024-10-17 09:30:00'),
+(4, 65.75, -0.75, -1.13, 8000000, '2024-10-17 09:30:00'),
+(5, 75.00, 1.00, 1.35, 10000000, '2024-10-17 09:30:00');
+GO
 
+-- Thêm dữ liệu cho các chỉ số thị trường chứng khoán
+INSERT INTO market_indices (name, symbol)
+VALUES 
+('S&P 500', 'SPX'),
+('NASDAQ 100', 'NDX'),
+('Dow Jones Industrial Average', 'DJIA'),
+('FTSE 100', 'FTSE'),
+('VN-Index', 'VNI');
+GO
+
+-- Thêm dữ liệu cho các công ty vào các chỉ số
+-- Cổ phiếu giả định có ID từ 1 đến 10 cho các công ty khác nhau
+
+-- Cổ phiếu thuộc S&P 500
+INSERT INTO index_constituents (index_id, stock_id)
+VALUES 
+(1, 1), -- Apple (SPX)
+(1, 2), -- Microsoft (SPX)
+(1, 3); -- Amazon (SPX)
+GO
+
+-- Cổ phiếu thuộc NASDAQ 100
+INSERT INTO index_constituents (index_id, stock_id)
+VALUES 
+(2, 1), -- Apple (NDX)
+(2, 2), -- Microsoft (NDX)
+(2, 4); -- Facebook (NDX)
+GO
+
+-- Cổ phiếu thuộc Dow Jones Industrial Average
+INSERT INTO index_constituents (index_id, stock_id)
+VALUES 
+(3, 1), -- Apple (DJIA)
+(3, 5), -- Coca Cola (DJIA)
+(3, 6); -- Boeing (DJIA)
+GO
+
+-- Cổ phiếu thuộc FTSE 100
+INSERT INTO index_constituents (index_id, stock_id)
+VALUES 
+(4, 7), -- HSBC (FTSE)
+(4, 8), -- BP (FTSE)
+(4, 9); -- Unilever (FTSE)
+GO
+
+-- Cổ phiếu thuộc VN-Index
+INSERT INTO index_constituents (index_id, stock_id)
+VALUES 
+(5, 10), -- Vingroup (VNI)
+(5, 11), -- FPT (VNI)
+(5, 12); -- VNM (VNI)
+GO
+
+-- Thêm dữ liệu cho các chứng khoán phái sinh
+INSERT INTO derivatives (name, underlying_asset_id, contract_size, expiration_date, strike_price, last_price, change, percent_change, open_price, high_price, low_price, volume, open_interest, time_stamp)
+VALUES 
+('S&P 500 Futures', 1, 50, '2024-12-20', 4200.50, 4215.00, 10.00, 0.24, 4205.00, 4220.00, 4190.00, 1500, 3000, GETDATE()),
+('NASDAQ 100 Options', 2, 100, '2024-11-15', 3400.75, 3410.00, -5.00, -0.15, 3415.00, 3425.00, 3400.00, 800, 2000, GETDATE()),
+('Gold Futures', 3, 10, '2025-01-30', 1800.00, 1795.50, -3.00, -0.17, 1798.00, 1810.00, 1790.00, 600, 1500, GETDATE()),
+('Crude Oil Futures', 4, 100, '2024-12-15', 70.50, 71.00, 1.00, 1.43, 69.50, 72.00, 68.00, 1000, 2500, GETDATE()),
+('Euro FX Futures', 5, 125000, '2024-10-20', 1.1500, 1.1520, 0.0050, 0.44, 1.1480, 1.1550, 1.1450, 1200, 1800, GETDATE());
+GO
+
+
+-- Thêm dữ liệu cho các chứng quyền có bảo đảm
+INSERT INTO covered_warrants (underlying_asset_id, issue_date, expiration_date, strike_price, warrant_type)
+VALUES 
+(1, '2024-01-01', '2025-01-01', 4200.00, 'Call'),  -- Chứng quyền mua S&P 500
+(2, '2024-03-01', '2024-12-01', 3400.00, 'Put'),   -- Chứng quyền bán NASDAQ 100
+(3, '2024-05-01', '2025-05-01', 1800.00, 'Call'),  -- Chứng quyền mua vàng
+(4, '2024-02-01', '2024-11-01', 70.00, 'Put'),      -- Chứng quyền bán dầu thô
+(5, '2024-04-01', '2025-04-01', 1.1400, 'Call');    -- Chứng quyền mua Euro FX
+GO
+
+-- Thêm dữ liệu cho các quỹ đầu tư chứng khoán (ETF)
+INSERT INTO etfs (name, symbol, management_company, inception_date)
+VALUES 
+('SPDR S&P 500 ETF Trust', 'SPY', 'State Street Global Advisors', '1993-01-22'),
+('iShares Russell 2000 ETF', 'IWM', 'BlackRock', '2000-05-22'),
+('Invesco QQQ Trust', 'QQQ', 'Invesco', '1999-03-10'),
+('Vanguard Total Stock Market ETF', 'VTI', 'Vanguard Group', '2001-05-24'),
+('iShares MSCI Emerging Markets ETF', 'EEM', 'BlackRock', '2003-04-07');
+GO
+
+-- Thêm dữ liệu cho các giá quỹ đầu tư chứng khoán (ETF)
+INSERT INTO etf_quete (etf_id, price, change, percent_change, total_volume, time_stamp)
+VALUES 
+(1, 420.50, 2.00, 0.48, 1500000, GETDATE()),
+(2, 225.30, -1.50, -0.66, 800000, GETDATE()),
+(3, 350.75, 3.50, 1.01, 1200000, GETDATE()),
+(4, 200.10, 1.10, 0.55, 950000, GETDATE()),
+(5, 40.00, -0.20, -0.50, 500000, GETDATE());
+GO
+
+-- Thêm dữ liệu cho các cổ phiếu nắm giữ của quỹ ETF
+INSERT INTO etf_holdings (etf_id, stock_id, shares_held, weight)
+VALUES 
+(1, 1, 500000, 0.05),  -- 5% cổ phiếu A trong SPY
+(1, 2, 600000, 0.07),  -- 7% cổ phiếu B trong SPY
+(2, 3, 400000, 0.06),  -- 6% cổ phiếu C trong IWM
+(3, 4, 300000, 0.08),  -- 8% cổ phiếu D trong QQQ
+(4, 5, 700000, 0.10);  -- 10% cổ phiếu E trong VTI
+GO
+
+-- Thêm dữ liệu cho danh sách theo dõi cổ phiếu
+INSERT INTO watchlists (user_id, stock_id)
+VALUES 
+(1, 1),  -- Người dùng 1 theo dõi cổ phiếu A
+(1, 2),  -- Người dùng 1 theo dõi cổ phiếu B
+(2, 2),  -- Người dùng 2 theo dõi cổ phiếu B
+(2, 3),  -- Người dùng 2 theo dõi cổ phiếu C
+(3, 1),  -- Người dùng 3 theo dõi cổ phiếu A
+(3, 3),  -- Người dùng 3 theo dõi cổ phiếu C
+(3, 4);  -- Người dùng 3 theo dõi cổ phiếu D
+GO
+
+-- Thêm dữ liệu cho đơn hàng
+INSERT INTO orders (user_id, stock_id, order_type, direction, quantity, price, status, order_date)
+VALUES 
+(1, 1, 'market', 'buy', 100, 50.00, 'executed', GETDATE()),    -- Người dùng 1 đặt lệnh mua cổ phiếu A
+(1, 2, 'limit', 'sell', 50, 52.00, 'pending', GETDATE()),      -- Người dùng 1 đặt lệnh bán cổ phiếu B
+(2, 2, 'stop', 'buy', 200, 51.00, 'pending', GETDATE()),       -- Người dùng 2 đặt lệnh mua cổ phiếu B
+(2, 3, 'market', 'sell', 150, 48.50, 'executed', GETDATE()),   -- Người dùng 2 đặt lệnh bán cổ phiếu C
+(3, 1, 'limit', 'buy', 250, 49.00, 'pending', GETDATE()),      -- Người dùng 3 đặt lệnh mua cổ phiếu A
+(3, 4, 'stop', 'sell', 100, 55.00, 'pending', GETDATE());      -- Người dùng 3 đặt lệnh bán cổ phiếu D
+GO
+
+-- Thêm dữ liệu cho danh mục đầu tư
+INSERT INTO portfolios (user_id, stock_id, quantity, purchase_price, purchase_date)
+VALUES 
+(1, 1, 100, 48.00, '2024-01-15'),  -- Người dùng 1 sở hữu 100 cổ phiếu A
+(1, 2, 50, 51.00, '2024-02-10'),   -- Người dùng 1 sở hữu 50 cổ phiếu B
+(2, 2, 200, 50.50, '2024-03-05'),  -- Người dùng 2 sở hữu 200 cổ phiếu B
+(2, 3, 150, 47.00, '2024-04-12'),  -- Người dùng 2 sở hữu 150 cổ phiếu C
+(3, 1, 250, 49.50, '2024-05-20'),  -- Người dùng 3 sở hữu 250 cổ phiếu A
+(3, 4, 100, 54.00, '2024-06-30');  -- Người dùng 3 sở hữu 100 cổ phiếu D
+GO
+
+-- Thêm dữ liệu cho thông báo
+INSERT INTO notifications (user_id, notification_type, content, is_read, created_at)
+VALUES 
+(1, 'order_executed', 'Đơn hàng mua cổ phiếu A đã được thực hiện thành công.', 0, GETDATE()),
+(1, 'price_alert', 'Cổ phiếu B đã đạt đến giá 52.00.', 0, GETDATE()),
+(2, 'news_event', 'Công ty C công bố lợi nhuận quý 3 tăng trưởng 20%.', 0, GETDATE()),
+(2, 'order_executed', 'Đơn hàng bán cổ phiếu C đã được thực hiện thành công.', 1, GETDATE()),
+(3, 'price_alert', 'Cổ phiếu D đã giảm xuống dưới 45.00.', 0, GETDATE());
+GO
+
+-- Thêm dữ liệu cho tài liệu giáo dục
+INSERT INTO educational_resources (title, content, category, date_published)
+VALUES 
+('Hướng dẫn đầu tư cổ phiếu cho người mới bắt đầu', 'Tài liệu này giúp người đọc hiểu về cách đầu tư cổ phiếu.', 'Đầu tư', GETDATE()),
+('Quản lý rủi ro trong đầu tư', 'Các chiến lược để giảm thiểu rủi ro khi đầu tư.', 'Quản lý rủi ro', GETDATE()),
+('Chiến lược giao dịch ngắn hạn', 'Hướng dẫn và các mẹo để thực hiện giao dịch ngắn hạn hiệu quả.', 'Chiến lược giao dịch', GETDATE()),
+('Tổng quan về thị trường chứng khoán', 'Thông tin cơ bản về cách thức hoạt động của thị trường chứng khoán.', 'Đầu tư', GETDATE());
+GO
+
+-- Thêm dữ liệu cho tài khoản ngân hàng liên kết
+INSERT INTO linked_bank_accounts (user_id, bank_name, account_number, routing_humber, account_type)
+VALUES 
+(1, 'Ngân hàng A', '123456789', '987654321', 'checking'),  -- Tài khoản người dùng 1
+(1, 'Ngân hàng B', '987654321', '123456789', 'savings'),   -- Tài khoản người dùng 1
+(2, 'Ngân hàng C', '456789123', '321654987', 'checking'),  -- Tài khoản người dùng 2
+(3, 'Ngân hàng D', '654321789', '789123456', 'savings');    -- Tài khoản người dùng 3
+GO
+
+-- Thêm dữ liệu cho giao dịch
+INSERT INTO transactions (user_id, linked_account_id, transaction_type, amount, transaction_date)
+VALUES 
+(1, 1, 'withdrawal', 50000.00, GETDATE()),  -- Người dùng 1 rút 50,000
+(1, 2, 'deposit', 30000.00, GETDATE()),     -- Người dùng 1 gửi 30,000
+(2, 3, 'withdrawal', 100000.00, GETDATE()), -- Người dùng 2 rút 100,000
+(3, 4, 'deposit', 75000.00, GETDATE());     -- Người dùng 3 gửi 75,000
+GO
+
+/*
+	SELECT TABLE (View)
+*/
+
+create view v_stock_index as
+select 
+	s.stock_id,s.symbol,s.company_name, s.market_cap,
+	s.sector_en, s.sector, s.industry_en, s.industry,
+	s.stock_type, i.index_id, 
+	m.symbol as index_symbol,m.name as index_name
+from stocks as s
+inner join index_constituents as i
+on s.stock_id = i.stock_id
+inner join market_indices as m
+on m.index_id = i.index_id;
+go
+
+select 
+	v.index_symbol,
+	v.index_name,
+	v.symbol as stock_symbol,
+	v.company_name
+from v_stock_index as v
+order by v.index_symbol;
+go
+
+
+select 
+	v.index_symbol,
+	v.index_name,
+	count(distinct v.company_name) as total_companies
+from v_stock_index as v
+group by v.index_symbol, v.index_name
+order by v.index_symbol;
+go
